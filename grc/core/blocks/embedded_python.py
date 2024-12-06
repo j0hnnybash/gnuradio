@@ -90,17 +90,23 @@ class EPyBlock(Block):
         self._epy_reload_error = None
 
     def rewrite(self):
+        print("rewrite start", self.params)
         Element.rewrite(self)
 
         param_src = self.params['_source_code']
 
         src = param_src.get_value()
+
+        print("rewriting", self.params)
         # Note: we can use get_evaluated() since all params have been evaluated by Elemen.rewrite(self) above.
         block_params = {k: param.get_evaluated() for k, param in self.params.items() if _is_epy_block_param(param)}
         try:
+            print(f"about to extract!")
             blk_io = utils.epy_block_io.extract(src, block_params)
+            print(f"extracted blk_io: {blk_io}")
 
         except Exception as e:
+            print(f"extraction failed: {e}")
             self._epy_reload_error = ValueError(str(e))
             try:  # Load last working block io
                 blk_io_args = literal_eval(self.states['_io_cache'])
@@ -135,8 +141,10 @@ class EPyBlock(Block):
         self._update_ports('out', self.sources, blk_io.sources, 'source')
 
         super(EPyBlock, self).rewrite()
+        print("rewrite done", self.params)
 
     def _update_params(self, params_in_src):
+        print(f"update params: {params_in_src}")
         param_factory = self.parent_platform.make_param
         params = {}
         for key, value in self.params.copy().items():
@@ -201,6 +209,7 @@ def _is_epy_block_param(param):
 
 
 def _mark_as_epy_block_param(param):
+    print(f"marking {param} as epy block param")
     setattr(param, '__epy_param__', True)
 
 

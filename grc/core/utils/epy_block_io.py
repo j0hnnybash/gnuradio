@@ -63,10 +63,13 @@ def extract(cls, block_params):
     if len(defaults) + 1 != len(spec.args):
         raise ValueError("Need all __init__ arguments to have default values")
 
+    print(f"trying to instantiate for io extraction using {block_params}")
     try:
         instance = cls(**block_params)
     except Exception as e:
         raise RuntimeError("Can't create an instance of your block: " + str(e))
+
+    print(f"instantiated block instance {instance.name()} for io extraction using {block_params}")
 
     name = instance.name()
 

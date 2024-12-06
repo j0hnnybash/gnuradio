@@ -673,6 +673,7 @@ class Block(Element):
         Since params can be dynamically created based another param,
         call rewrite, and repeat the load until the params stick.
         """
+        print(f"import_data called{parameters}")
         self.params['id'].value = name
         self.states.update(states)
 
@@ -689,6 +690,7 @@ class Block(Element):
             # Store hash and call rewrite
             pre_rewrite_hash = get_hash()
             self.rewrite()
+            print(f"rewritten[{name}]: old {pre_rewrite_hash} new {get_hash()}")
 
     ##############################################
     # Controller Modify
