@@ -682,22 +682,6 @@ class Block(Element):
 
         pre_rewrite_hash = -1
         while pre_rewrite_hash != get_hash():
-            # jlrb: WTF, this is weird. I assume we'd need to add back
-            # params which do not already exist or take the long and
-            # weird way around by duplicating parameters in the states
-            # dictionary.
-            # 
-            # TODO: find out where the list of parameters which are imported here are originally defined.
-            # 
-            # TODO: what prevents us from simply importing all
-            # parameters? presumably that those parameters would be
-            # continuously resurrected even if they were deleted from
-            # the source code.
-            #
-            # OTOH. shouldn't this work as expected, since the params
-            # get dynamically generated with default values by the
-            # first call to rewrite(), then the second time round they
-            # should be restored to some expected values.
             for key, value in parameters.items():
                 try:
                     self.params[key].set_value(value)
@@ -705,7 +689,6 @@ class Block(Element):
                     continue
             # Store hash and call rewrite
             pre_rewrite_hash = get_hash()
-            # jlrb: this should make epy block params appear...
             self.rewrite()
             print(f"rewritten[{name}]: old {pre_rewrite_hash} new {get_hash()}")
 
