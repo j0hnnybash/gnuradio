@@ -172,6 +172,46 @@ class EPyBlock(Block):
         iter_ports = iter(ports)
         ports_new = []
         port_current = next(iter_ports, None)
+        # FIXME(jlrb): now that we can change the vlen of an existing
+        # block via parameter we probably want to reuse the
+        # appropriate port and connections instead of breaking them.
+        # I wonder how this worked when we simply changed the default
+        # in the code block?
+        #
+        # This seems to break the connections as well, only non
+        # embedded blocks behave differently.
+        #
+        # I seem to recall from 3.10.10 that this would not
+        # happen... #NotMyBug?  Actually checking old versions I had
+        # previously installed, I believe that this always happened
+        # for epy blocks.
+        #
+        #
+        # Also now the block parameter is initially set to the default
+        # value, after changing it a couple of times *headscratch*
+        #
+        # It appears that the initial display of a "None" value in the
+        # block parameters is a display/GUI issue. If you save and
+        # reopen the block gets the correct default parameter,
+        # alternatively if you have the parameter dialog open, simply
+        # pressing ok will set the correct value. This appears to be a
+        # regression introduced between 3.10.10 and 3.10.11.
+        #
+        # Note: QT GUI behaves differently, it is less eager to
+        # reflect code changes in the UI and requires some random GUI
+        # interaction to pick up on added/removed init_args, however
+        # it always shows the correct value directly.  CORRECTION:
+        # actually no, the issue is also reproducible though more
+        # complicated using QT GUI, if you open the parameter dialog
+        # for a different block the newly added parameter initially
+        # appears with no value and the value is only filled in once
+        # you again open some other parameter dialog or similar!).
+        #
+        #
+        # NOTE to self: QT GUI requires missing dependency python-qtpy on
+        # archlinux which is only listed for gnuradio-git in the AUR,
+        # even though the official package also has QT support
+        # enabled, so maybe python-qtpy could be added as optional dependency?
         for key, port_type, vlen in port_specs:
             reuse_port = (
                 port_current is not None and
