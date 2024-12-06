@@ -74,13 +74,6 @@ def extract(cls, block_params):
     name = instance.name()
 
     params = list(zip(init_args, defaults))
-    # jlrb: actually don't need to pass current values out, as we
-    # already have these in the python block params, the defaults &
-    # parameter list in general are passed out in order to pick up on
-    # changes to the defaults and on any newly added parameters
-    #
-    # list of (key, devault, current) tuples
-    #params = [(key, default, block_params.get(key, default)) for key, default in params]
 
     def settable(attr):
         try:
