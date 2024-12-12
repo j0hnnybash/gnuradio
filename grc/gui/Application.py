@@ -563,12 +563,15 @@ class Application(Gtk.Application):
                 self.dialog = PropsDialog(self.main_window, selected_block)
                 response = Gtk.ResponseType.APPLY
                 while response == Gtk.ResponseType.APPLY:  # rerun the dialog if Apply was hit
-                    response = self.dialog.run()
+                    response = self.dialog.run() # FIXME(jlrb): new ports are created here
                     if response in (Gtk.ResponseType.APPLY, Gtk.ResponseType.ACCEPT):
                         page.state_cache.save_new_state(
                             flow_graph.export_data())
-                        # Following line forces a complete update of io ports
-                        flow_graph_update()
+                        # Following line forces a complete update of io ports and calls create_shapes()
+                        #
+                        # FIXME(jlrb): this means in these few lines ports are drawn prematurely
+                        # TODO(jlrb): revert initial fix and see if timing alone can trigger the issue.
+                        flow_graph_update() # FIXME(jlrb): create_shapes() is finally called here
                         page.saved = False
                     if response in (Gtk.ResponseType.REJECT, Gtk.ResponseType.ACCEPT):
                         n = page.state_cache.get_current_state()
@@ -600,6 +603,10 @@ class Application(Gtk.Application):
                 self.dialog.destroy()
                 self.dialog = None
         elif action == Actions.EXTERNAL_UPDATE:
+            # NOTE(jlrb): external editor update, in this case
+            # rewrite() does not get called "early", instead it is
+            # called for the first time (after the change) during
+            # flow_graph_update() below.
             page.state_cache.save_new_state(flow_graph.export_data())
             flow_graph_update()
             if self.dialog is not None:
