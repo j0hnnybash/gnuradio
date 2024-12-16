@@ -20,6 +20,8 @@ class Port(CorePort):
         self.gui = GUIPort(self, direction)
 
     def remove_clone(self, port):
+        # FIXME: We need the same thing for ports removed through
+        # other means, e.g. when editing embedded python blocks
         self.gui.scene().removeItem(port.gui)
         super(self.__class__, self).remove_clone(port)
 
@@ -68,6 +70,7 @@ class GUIPort(QGraphicsItem):
         """ Dummy blocks instantiate ports only when a connection to them is created. """
         if self.core.parent_block.is_dummy_block:
             self.setParentItem(self.core.parent_block.gui)
+        print("created")
 
     def update_connections(self):
         if self.core._dir == "sink":
@@ -117,9 +120,15 @@ class GUIPort(QGraphicsItem):
         self._bg_color = color
         self._border_color = color
 
+    def _check_if_still_alive(self):
+        if  self.core not in self.core.parent.ports():
+            print("port is dead", id(self))
+
     def paint(self, painter, option, widget):
         if self.core.hidden:
             return
+        self._check_if_still_alive()
+        print("paint", id(self))
         painter.setRenderHint(QPainter.Antialiasing)
 
         pen = QPen(self._border_color)
