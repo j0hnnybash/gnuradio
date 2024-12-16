@@ -51,6 +51,25 @@ class Flowgraph(CoreFlowgraph):
         self.gui = gui
         CoreFlowgraph.__init__(self, platform)
 
+    def remove_element_for_qt_gui(self, element) -> None:
+        # wrapper around the actual remove_element() function to avoid hitting our own overload
+        super(self.__class__, self).remove_element(element)
+
+    def remove_element(self, element) -> None:
+        # Delegate removal to the GUI, it will call us back via remove_element_for_qt_gui().
+        #
+        # This dance is required because unfortunately the GUI
+        # ("View") assumes that it controls the "core" data model,
+        # instead of observing it through predefined hooks in the
+        # "core". This overload essentially implements such a missing
+        # hook, however this hook is incomplete since the "core" model
+        # also sometimes deletes elements directly from the underlying
+        # element collections (e.g. `self.connections`)
+        #
+        # FIXME: ensure "core" model uses `Flowgraph.remove_element()`
+        # where appropriate.
+        self.gui.remove_element(element.gui)
+
 
 class FlowgraphScene(QtWidgets.QGraphicsScene, base.Component):
     itemMoved = QtCore.Signal([QtCore.QPointF])
@@ -376,7 +395,7 @@ class FlowgraphScene(QtWidgets.QGraphicsScene, base.Component):
 
     def remove_element(self, element: GUIBlock):
         self.removeItem(element)
-        self.core.remove_element(element.core)
+        self.core.remove_element_for_qt_gui(element.core)
 
     def get_extents(self):
         # show_comments = Actions.TOGGLE_SHOW_BLOCK_COMMENTS.get_active()
