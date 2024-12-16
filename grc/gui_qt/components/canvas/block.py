@@ -50,6 +50,18 @@ class Block(CoreBlock):
         self.rewrite()
         self.gui.create_shapes_and_labels()
 
+    def rewrite(self):
+        # Wrap rewrite() to remove any GUIPorts that were removed without notifying us.
+        old_ports = list(self.ports())
+        super(self.__class__, self).rewrite()
+        new_ports = list(self.ports())
+        for port in old_ports:
+            gui_port = port.gui
+            if port in new_ports or not gui_port.scene():
+                # port is still in use, or was already removed from the scene
+                continue
+            gui_port.scene().removeItem(gui_port)
+
     def update_bus_logic(self):
         for direc in {'source', 'sink'}:
             if direc == 'source':
